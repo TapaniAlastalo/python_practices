@@ -5,7 +5,7 @@ x = input()
 # stop if input is x
 while x != "x":
     # if found remove from list
-    if list.__contains__(x):
+    if x in list:
         list.remove(x)
     # else add to list
     else:
