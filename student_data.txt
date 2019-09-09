@@ -1,0 +1,5 @@
+joe;20;f1234;script programming,physics 1,nose picking 101
+josie;21;f5678;script programming,mathematics 2,german 1
+adam;22;f1122;mathematics 1,physics 2,german 1
+alice;22;d2233;mathematics 2,physics 2,german 2
+bob;23;d3344;mathematics 3,physics 3,algorithms and data structures

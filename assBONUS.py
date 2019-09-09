@@ -43,7 +43,18 @@ def buildStudent(line):
         return student
     return None
 
+def filter_by_course(students, filteredCourse):
+    filteredStudents = []
+    for student in students:
+        if filteredCourse in student.list_courses():
+            filteredStudents.append(student)
+    return filteredStudents
+
+
 fileName = "student_data.txt"
 students = read_student_data(fileName)
-for student in students:
+filteredCourse = "mathematics 2"
+math2_students = filter_by_course(students, filteredCourse)
+
+for student in math2_students:
     print(student.name + " " + student.student_id)    
