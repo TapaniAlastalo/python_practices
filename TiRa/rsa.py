@@ -70,17 +70,17 @@ def ASCIIPointsToWord(points):
     return word
 
 # RSA coding
-def encode(points, k, n):
+def encode(points, e, n):
     encoded = []
-    for p in points:
-        encoded.append((p**k)%n)
+    for m in points:
+        encoded.append((m**e)%n)
     return encoded
 
 # RSA decoding
-def decode(encodedPoints, k, n, d):
+def decode(encodedPoints, d, n):
     decoded = []
-    for p in encodedPoints:
-        decoded.append((p**d)%n)
+    for x in encodedPoints:
+        decoded.append((x**d)%n)
     return decoded
 
 # Calculate public key using pre values
@@ -91,12 +91,12 @@ def calculatePublicKey(p, q):
     return e
 
 # Calculate secret key using pre values
-def calculateSecretKey(p, q, k):
+def calculateSecretKey(p, q, e):
     r = (p-1) * (q-1)
     # calculate Eulers phi
     phi = eulerPhi(r)
     # secret key d
-    d = (k**(phi-1))%r
+    d = (e**(phi-1))%r
     return d
 
 
@@ -149,7 +149,7 @@ def main():
     print("As encoded ASCII points " + str(encodedPoints))
 
     # Decode
-    decodedPoints = decode(encodedPoints, e, n, d)
+    decodedPoints = decode(encodedPoints, d, n)
     # print decoded
     print("As decoded ASCII points " + str(decodedPoints))
     # Translate to chars
