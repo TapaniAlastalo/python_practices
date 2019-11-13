@@ -1,6 +1,22 @@
 import math
 import random
 
+LETTERS = [ 'A', 'B', 'C', 'D', 'E', 'F', 
+            'G', 'H', 'I', 'J', 'K', 'L', 
+            'M', 'N', 'O', 'P', 'Q', 'R', 
+            'S', 'T', 'U', 'V', 'W', 'X', 
+            'Y', 'Z', 'Å', 'Ä', 'Ö',
+            'a', 'b', 'c', 'd', 'e', 'f',
+            'g', 'h', 'i', 'j', 'k', 'l',
+            'm', 'n', 'o', 'p', 'q', 'r',
+            's', 't', 'u', 'v', 'w', 'x',
+            'y', 'z', 'å', 'ä', 'ö',
+            ' ', '-', ',', '.', '_', ':', ';'  ]
+
+# Find letter and return index of that letter
+def findLetterIndex(c):
+    return LETTERS.index(c)
+
 # Request shall we try again
 def requestAgain():
     print("Again? (y):")
@@ -9,7 +25,13 @@ def requestAgain():
 # Request word from user
 def requestWord():
     print("Give word:")
-    return input()       
+    word = ""
+    try:
+        word = input()
+
+    except:
+        word = requestWord()
+    return word       
 
 # Request word from user
 def requestPrimeNumber(prev):
@@ -69,6 +91,23 @@ def ASCIIPointsToWord(points):
         word = word + chr(p)
     return word
 
+# Translate characters to LETTER points
+def wordToLETTERPoints(word):
+    points = []
+    for c in word:
+        points.append(LETTERS.index(c))
+    return points
+
+# Translate LETTER points to character
+def LETTERPointsToWord(points):
+    word = ""
+    for p in points:
+        point = p%(len(LETTERS))
+        print("LETTER pts to word["+ str(p) + " = " + str(LETTERS[(p%len(LETTERS))]) +"]")
+        word = word + LETTERS[(p%len(LETTERS))]
+    return word
+
+
 # RSA coding
 def encode(points, e, n):
     encoded = []
@@ -99,6 +138,21 @@ def calculateSecretKey(p, q, e):
     d = (e**(phi-1))%r
     return d
 
+# Calculate suurin yhteinen tekijä luvuille a ja b
+def calculateSYT(a, b):
+    # ensure that b = bigger
+    if a > b:
+        c = a
+        a = b
+        b = c
+    base = b
+    divider = a
+    mod = base % divider 
+    while (mod != 0):  
+        base = divider      
+        divider = mod
+        mod = base%divider
+    return (divider)
 
 # Calculate euler's phi
 # https://stackoverflow.com/questions/18114138/computing-eulers-totient-function by Rodrigo Lopez
@@ -125,7 +179,7 @@ def main():
     n = p*q
     e = calculatePublicKey(p, q)
     #e = 5
-    print("Public key pair [n, k] for encrypting is [" + str(n) + "," + str(e) + "]")
+    print("Public key pair [n, e] for encrypting is [" + str(n) + "," + str(e) + "]")
 
     # Calculate secret key d
     d = calculateSecretKey(p, q, e)
@@ -137,23 +191,28 @@ def main():
     print("Word : " + word)
 
     # Translate to points
-    points = wordToASCIIPoints(word)
-    print("As ASCII points " + str(points))
+    # points = wordToASCIIPoints(word)
+    # print("As ASCII points " + str(points))
+    points = wordToLETTERPoints(word)
+    print("As LETTER points " + str(points))
 
     # Encode
     encodedPoints = encode(points, e, n)
     # print encoded
     # Translate to chars
-    encodedWord = ASCIIPointsToWord(encodedPoints)
+    # encodedWord = ASCIIPointsToWord(encodedPoints)
+    # print("As encoded ASCII points " + str(encodedPoints))
+    encodedWord = LETTERPointsToWord(encodedPoints)
+    print("As encoded LETTER points " + str(encodedPoints))
     print("Encoded word : " + encodedWord)
-    print("As encoded ASCII points " + str(encodedPoints))
+
 
     # Decode
     decodedPoints = decode(encodedPoints, d, n)
-    # print decoded
-    print("As decoded ASCII points " + str(decodedPoints))
+    print("As decoded points " + str(decodedPoints))
     # Translate to chars
-    decodedWord = ASCIIPointsToWord(decodedPoints)
+    # decodedWord = ASCIIPointsToWord(decodedPoints)
+    decodedWord = LETTERPointsToWord(decodedPoints)
     print("Decoded word : " + decodedWord)
 
     # Again?
