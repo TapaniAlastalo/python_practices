@@ -87,7 +87,7 @@ def wordToASCIIPoints(word):
 def ASCIIPointsToWord(points):
     word = ""
     for p in points:
-        print("ASCII pts to word["+ str(p) + " = " + chr(p) +"]")
+        #print("ASCII pts to word["+ str(p) + " = " + chr(p) +"]")
         word = word + chr(p)
     return word
 
@@ -102,8 +102,8 @@ def wordToLETTERPoints(word):
 def LETTERPointsToWord(points):
     word = ""
     for p in points:
-        point = p%(len(LETTERS))
-        print("LETTER pts to word["+ str(p) + " = " + str(LETTERS[(p%len(LETTERS))]) +"]")
+        #point = p%(len(LETTERS))
+        #print("LETTER pts to word["+ str(p) + " = " + str(LETTERS[(p%len(LETTERS))]) +"]")
         word = word + LETTERS[(p%len(LETTERS))]
     return word
 
@@ -124,22 +124,36 @@ def decode(encodedPoints, d, n):
 
 # Calculate public key using pre values
 def calculatePublicKey(p, q):
+    print("calculate public key")
     r = (p-1) * (q-1)
     # random number e between 1 - r
     e = random.randint(1+1, r-1)
+    counter = r
+    while calculateSYT(e, r) != 1:
+        e = random.randint(1+1, r-1)
+        # prevent for ever loop
+        counter = counter - 1
+        if counter == 0:
+            return -1
     return e
 
 # Calculate secret key using pre values
 def calculateSecretKey(p, q, e):
+    print("calculate secret key")
     r = (p-1) * (q-1)
     # calculate Eulers phi
     phi = eulerPhi(r)
     # secret key d
     d = (e**(phi-1))%r
+    #ed≡1modϕ
+    # d != e
+    if d == e:
+        return -1
     return d
 
 # Calculate suurin yhteinen tekijä luvuille a ja b
 def calculateSYT(a, b):
+    print("calculate SYT")
     # ensure that b = bigger
     if a > b:
         c = a
@@ -157,6 +171,7 @@ def calculateSYT(a, b):
 # Calculate euler's phi
 # https://stackoverflow.com/questions/18114138/computing-eulers-totient-function by Rodrigo Lopez
 def eulerPhi(n):
+    print("calculate euler phi")
     phi = int(n > 1 and n)
     for p in range(2, int(n ** .5) + 1):
         if not n % p:
@@ -164,56 +179,86 @@ def eulerPhi(n):
             while not n % p:
                 n //= p
     #if n is > 1 it means it is prime
-    if n > 1: phi -= phi // n 
+    if n > 1: 
+        phi -= phi // n 
     return phi
+
+# alter Ints to hexes
+def intsToHexes(ints):
+    hexes = []
+    for i in ints:
+        hexes.append(hex(i))
+    return hexes
+
+# alter hexes to Ints
+def hexesToInts(hexes):
+    points = []
+    for hx in hexes:
+        points.append(int(hx, 16))
+    return points
 
 
 # RSA algo
 def main():
-    # Secret pre values. Could be any prime numbers.
-    p = requestPrimeNumber(0) #7
-    q = requestPrimeNumber(p) #19
-    print("p and q [" + str(p) + "," + str(q) + "]")
+    try:
+        # Secret pre values. Could be any prime numbers.
+        p = requestPrimeNumber(0) #7
+        q = requestPrimeNumber(p) #19
+        print("p and q [" + str(p) + "," + str(q) + "]")
+        
+        # Make public keys
+        n = p*q
+        e = calculatePublicKey(p, q)
+        # no e found
+        if e == -1:
+            raise ValueError('No public key e couldn\'t be determinated')
+        #e = 5
+        print("Public key pair [n, e] for encrypting is [" + str(n) + "," + str(e) + "]")
+
+        # Calculate secret key d
+        d = calculateSecretKey(p, q, e)
+        # no e found
+        if d == -1:
+            raise ValueError('No secret key d couldn\'t be determinated')
+        print("Secret key d for decrypting is [" + str(d) + "]")
+
+        # Request word from user
+        word = requestWord()
+        #word = "OIKEIN"
+        print("Word : " + word)
+
+        # Translate to points
+        # points = wordToASCIIPoints(word)
+        # print("As ASCII points " + str(points))
+        points = wordToLETTERPoints(word)
+        print("As LETTER points " + str(points))
+
+        # Encode
+        encodedPoints = encode(points, e, n)
+        # print encoded
+        # Translate to chars
+        encodedWord = LETTERPointsToWord(encodedPoints)
+        print("As encoded LETTER points " + str(encodedPoints))
+        print("Encoded word : " + encodedWord)
+        # HEX
+        hx = intsToHexes(encodedPoints)
+        print("As encoded HEX " + str(hx))
+        #dx = hexesToInts(hx)
+        #print("As encoded Int " + str(dx))
+        
+        # Decode
+        decodedPoints = decode(encodedPoints, d, n)
+        print("As decoded points " + str(decodedPoints))
+        # HEX
+        hx = intsToHexes(decodedPoints)
+        print("As decoded HEX " + str(hx))
+        # Translate to chars
+        # decodedWord = ASCIIPointsToWord(decodedPoints)
+        decodedWord = LETTERPointsToWord(decodedPoints)
+        print("Decoded word : " + decodedWord)
+    except ValueError as error:
+        print(error.args)
     
-    # Make public keys
-    n = p*q
-    e = calculatePublicKey(p, q)
-    #e = 5
-    print("Public key pair [n, e] for encrypting is [" + str(n) + "," + str(e) + "]")
-
-    # Calculate secret key d
-    d = calculateSecretKey(p, q, e)
-    print("Secret key d for decrypting is [" + str(d) + "]")
-
-    # Request word from user
-    word = requestWord()
-    #word = "OIKEIN"
-    print("Word : " + word)
-
-    # Translate to points
-    # points = wordToASCIIPoints(word)
-    # print("As ASCII points " + str(points))
-    points = wordToLETTERPoints(word)
-    print("As LETTER points " + str(points))
-
-    # Encode
-    encodedPoints = encode(points, e, n)
-    # print encoded
-    # Translate to chars
-    # encodedWord = ASCIIPointsToWord(encodedPoints)
-    # print("As encoded ASCII points " + str(encodedPoints))
-    encodedWord = LETTERPointsToWord(encodedPoints)
-    print("As encoded LETTER points " + str(encodedPoints))
-    print("Encoded word : " + encodedWord)
-
-
-    # Decode
-    decodedPoints = decode(encodedPoints, d, n)
-    print("As decoded points " + str(decodedPoints))
-    # Translate to chars
-    # decodedWord = ASCIIPointsToWord(decodedPoints)
-    decodedWord = LETTERPointsToWord(decodedPoints)
-    print("Decoded word : " + decodedWord)
 
     # Again?
     if requestAgain() == True:
